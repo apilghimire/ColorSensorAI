@@ -1,0 +1,62 @@
+======================================================================
+COLOR CLASSIFICATION - MODEL PERFORMANCE SUMMARY
+======================================================================
+Generated: 2026-01-21 11:26:38
+Dataset: Data.csv
+Training samples: 1917
+Testing samples: 480
+Classes: Blue, Green, Red, y
+======================================================================
+
+MODEL RANKINGS (by Accuracy):
+----------------------------------------------------------------------
+1. KNN                  - Accuracy: 0.9729
+2. Random Forest        - Accuracy: 0.9604
+3. Neural Network       - Accuracy: 0.9583
+4. SVM                  - Accuracy: 0.9187
+
+======================================================================
+DETAILED METRICS
+======================================================================
+
+SVM:
+  Accuracy:  0.9187
+  Precision: 0.9307
+  Recall:    0.9187
+  F1-Score:  0.9189
+  CV Score:  0.9249 (+/- 0.0169)
+
+Random Forest:
+  Accuracy:  0.9604
+  Precision: 0.9614
+  Recall:    0.9604
+  F1-Score:  0.9602
+  CV Score:  0.9650 (+/- 0.0054)
+
+KNN:
+  Accuracy:  0.9729
+  Precision: 0.9737
+  Recall:    0.9729
+  F1-Score:  0.9728
+  CV Score:  0.9739 (+/- 0.0072)
+
+Neural Network:
+  Accuracy:  0.9583
+  Precision: 0.9587
+  Recall:    0.9583
+  F1-Score:  0.9584
+  CV Score:  0.9666 (+/- 0.0112)
+
+======================================================================
+SAVED MODELS
+======================================================================
+Location: models/
+Files:
+  - SVM.pkl
+  - Random_Forest.pkl
+  - KNN.pkl
+  - Neural_Network.pkl
+  - scaler.pkl
+  - label_encoder.pkl
+  - model_info.json
+======================================================================

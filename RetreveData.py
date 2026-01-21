@@ -3,78 +3,91 @@ import csv
 import time
 from datetime import datetime
 
-# Configuration
-SERIAL_PORT = '/dev/cu.wchusbserial14140'  # Change this to your Arduino port (e.g., 'COM3' on Windows, '/dev/ttyUSB0' on Linux, '/dev/cu.usbmodem14101' on Mac)
-BAUD_RATE = 9600
-CSV_FILENAME = 'White.csv'
+# ======= CONFIGURATION =======
+SERIAL_PORT = '/dev/cu.wchusbserial58FA0447301'  # Change to your port (COM3, COM4 on Windows; /dev/ttyUSB0, /dev/ttyACM0 on Linux/Mac)
+BAUD_RATE = 115200
+CSV_FILENAME = 'unspecified.csv'
+MAX_SAMPLES = 600  # Set to desired number of samples
 
 
-def main():
-    print(f"Connecting to {SERIAL_PORT}...")
+# Column headers matching your Arduino output
+HEADERS = ['Red', 'Green', 'Blue', 'Clear', 'Distance_mm', 'Timestamp']
 
+def read_serial_data():
+    """Read data from ESP32-S3 and save to CSV file"""
+    
+    sample_count = 0
+    
     try:
         # Open serial connection
+        print(f"Connecting to {SERIAL_PORT} at {BAUD_RATE} baud...")
         ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
-        time.sleep(2)  # Wait for Arduino to reset
-
-        print(f"Connected! Logging data to {CSV_FILENAME}")
-        print("Press Ctrl+C to stop logging\n")
-
-        # Create/open CSV file
+        time.sleep(2)  # Wait for connection to stabilize
+        
+        # Clear any initial garbage data
+        ser.reset_input_buffer()
+        print("Connected! Reading data...\n")
+        
+        # Open CSV file for writing
         with open(CSV_FILENAME, 'w', newline='') as csvfile:
-            csv_writer = csv.writer(csvfile)
-
-            # Write header
-            csv_writer.writerow(['Timestamp', 'Red', 'Green', 'Blue', 'Distance_mm'])
-
-            # Skip initialization messages
-            while True:
-                line = ser.readline().decode('utf-8').strip()
-                if line and not line.startswith('Initializing') and not line.startswith('Sensors'):
-                    break
-
-            # Read and log data
-            while True:
+            writer = csv.writer(csvfile)
+            writer.writerow(HEADERS)  # Write header row
+            
+            print(f"Saving data to: {CSV_FILENAME}")
+            print(f"Target samples: {MAX_SAMPLES}")
+            print("Press Ctrl+C to stop early\n")
+            
+            while sample_count < MAX_SAMPLES:
                 try:
-                    # Read line from serial
-                    line = ser.readline().decode('utf-8').strip()
-
-                    if line:
-                        # Split comma-separated values
-                        values = line.split(',')
-
-                        if len(values) == 4:
-                            timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
-                            red, green, blue, distance = values
-
+                    # Read line from serial port
+                    if ser.in_waiting > 0:
+                        line = ser.readline().decode('utf-8').strip()
+                        
+                        # Skip empty lines or error messages
+                        if not line or 'NOT FOUND' in line:
+                            continue
+                        
+                        # Parse CSV data
+                        data = line.split(',')
+                        
+                        # Validate data format (should have 5 values: R,G,B,C,Distance)
+                        if len(data) == 5:
+                            sample_count += 1
+                            
+                            # Add timestamp
+                            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+                            data.append(timestamp)
+                            
                             # Write to CSV
-                            csv_writer.writerow([timestamp, red, green, blue, distance])
+                            writer.writerow(data)
                             csvfile.flush()  # Ensure data is written immediately
-
-                            # Print to console
-                            print(f"{timestamp} | R:{red} G:{green} B:{blue} Dist:{distance}mm")
-
-                except KeyboardInterrupt:
-                    print("\n\nStopping data logging...")
-                    break
-                except Exception as e:
-                    print(f"Error: {e}")
+                            
+                            # Print only sample number
+                            print(f"Sample: {sample_count}/{MAX_SAMPLES}")
+                        
+                except UnicodeDecodeError:
+                    # Skip lines with encoding errors
                     continue
-
-        ser.close()
-        print(f"Data saved to {CSV_FILENAME}")
-
+            
+            # Reached target samples
+            print(f"\n✓ Successfully collected {sample_count} samples!")
+            print(f"Data saved to: {CSV_FILENAME}")
+                    
     except serial.SerialException as e:
-        print(f"Error: Could not open serial port {SERIAL_PORT}")
-        print(f"Details: {e}")
-        print("\nTips:")
-        print("- Check if the Arduino is connected")
-        print("- Verify the correct COM port")
-        print("- Close Arduino IDE Serial Monitor if open")
-        print("- On Linux, you may need: sudo chmod 666 /dev/ttyUSB0")
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-
+        print(f"\nSerial Error: {e}")
+        print("Please check:")
+        print("1. Correct port name")
+        print("2. ESP32 is connected")
+        print("3. No other program is using the port")
+        
+    except KeyboardInterrupt:
+        print(f"\n\nStopped by user at {sample_count} samples")
+        print(f"Data saved to: {CSV_FILENAME}")
+        
+    finally:
+        if 'ser' in locals() and ser.is_open:
+            ser.close()
+            print("Serial port closed")
 
 if __name__ == "__main__":
-    main()
+    read_serial_data()

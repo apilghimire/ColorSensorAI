@@ -1,0 +1,44 @@
+{
+    "classes": [
+        "Blue",
+        "Green",
+        "Red",
+        "y"
+    ],
+    "feature_names": [
+        "Red",
+        "Green",
+        "Blue",
+        "Clear",
+        "Distance"
+    ],
+    "model_performance": {
+        "SVM": {
+            "accuracy": 0.91875,
+            "precision": 0.9307313616827543,
+            "recall": 0.91875,
+            "f1_score": 0.918883713322501
+        },
+        "Random_Forest": {
+            "accuracy": 0.9604166666666667,
+            "precision": 0.9613714615311221,
+            "recall": 0.9604166666666667,
+            "f1_score": 0.9602380585139166
+        },
+        "KNN": {
+            "accuracy": 0.9729166666666667,
+            "precision": 0.9737424832087618,
+            "recall": 0.9729166666666667,
+            "f1_score": 0.9728025051357444
+        },
+        "Neural_Network": {
+            "accuracy": 0.9583333333333334,
+            "precision": 0.9587423946139142,
+            "recall": 0.9583333333333334,
+            "f1_score": 0.9583877208402473
+        }
+    },
+    "training_date": "2026-01-21 11:26:30",
+    "dataset": "Data.csv",
+    "total_samples": 2397
+}
